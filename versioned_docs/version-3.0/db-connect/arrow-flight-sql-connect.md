@@ -34,7 +34,6 @@ In Doris, query results are organized in columnar format as Blocks. In versions 
 
 To install Apache Arrow, you can find detailed installation instructions in the official documentation [Apache Arrow](https://arrow.apache.org/install/). For more information on how Doris implements the Arrow Flight protocol, you can refer to [Doris support Arrow Flight SQL protocol](https://github.com/apache/doris/issues/25514).
 
-
 ## Python Usage
 
 Use Python's ADBC ​​Driver to connect to Doris to achieve extremely fast data reading. The following steps use Python (version >= 3.9) ADBC ​​Driver to perform a series of common database syntax operations, including DDL, DML, setting Session variables, and Show statements.
@@ -52,6 +51,7 @@ Import the following modules/libraries in the code to use the installed Library:
 
 ```Python
 import adbc_driver_manager
+import adbc_driver_flightsql
 import adbc_driver_flightsql.dbapi as flight_sql
 
 >>> print(adbc_driver_manager.__version__)
@@ -281,6 +281,7 @@ cursor.close()
 The open source JDBC driver of Arrow Flight SQL protocol is compatible with the standard JDBC API, which can be used by most BI tools to access Doris through JDBC and supports high-speed transmission of Apache Arrow data. The usage is similar to connecting to Doris through the JDBC driver of MySQL protocol. You only need to replace the jdbc:mysql protocol in the link URL with the jdbc:arrow-flight-sql protocol. The query results are still returned in the JDBC ResultSet data structure.
 
 POM dependency:
+
 ```Java
 <properties>
     <arrow.version>17.0.0</arrow.version>
@@ -325,6 +326,7 @@ conn.close();
 In addition to using JDBC, similar to Python, JAVA can also create a Driver to read Doris and return data in Arrow format. The following are how to use AdbcDriver and JdbcDriver to connect to Doris Arrow Flight Server.
 
 POM dependency:
+
 ```Java
 <properties>
     <adbc.version>0.12.0</adbc.version>
@@ -493,4 +495,4 @@ The Linux kernel version of kylinv10 SP2 and SP3 is only up to 4.19.90-24.4.v210
 
 8. Python reports an error `grpc: received message larger than max (20748753 vs. 16777216)`. Refer to [Python: grpc: received message larger than max (20748753 vs. 16777216) #2078](https://github.com/apache/arrow-adbc/issues/2078) to add `adbc_driver_flightsql.DatabaseOptions.WITH_MAX_MSG_SIZE.value` in Database Option.
 
-9. Before Doris version 2.1.7, the error `Reach limit of connections` is reported. This is because there is no limit on the number of Arrow Flight connections for a single user, which is less than `max_user_connections` in `UserProperty`, which is 100 by default. You can modify the current maximum number of connections for Billie user to 100 by `SET PROPERTY FOR 'Billie' 'max_user_connections' = '1000';`, or add `arrow_flight_token_cache_size=50` in `fe.conf` to limit the overall number of Arrow Flight connections. Before Doris version 2.1.7, Arrow Flight connections are disconnected after a default timeout of 3 days. It only forces the number of connections to be less than `qe_max_connection/2`. If the number of connections exceeds the limit, they will be eliminated according to lru. `qe_max_connection` is the total number of connections for all fe users, which is 1024 by default. For details, see the introduction of the conf `arrow_flight_token_cache_size`. Fixed in [Fix exceed user property max connection cause Reach limit of connections #39127](https://github.com/apache/doris/pull/39127). For details, please see: [Questions](https://ask.selectdb.com/questions/D18b1/2-1-4-ban-ben-python-shi-yong-arrow-flight-sql-lian-jie-bu-hui-duan-kai-lian-jie- shu-zhan-man-da-dao-100/E1ic1?commentId=10070000000005324)
+9. Before Doris version 2.1.7, the error `Reach limit of connections` is reported. This is because there is no limit on the number of Arrow Flight connections for a single user, which is less than `max_user_connections` in `UserProperty`, which is 100 by default. You can modify the current maximum number of connections for Billie user to 100 by `SET PROPERTY FOR 'Billie' 'max_user_connections' = '1000';`, or add `arrow_flight_token_cache_size=50` in `fe.conf` to limit the overall number of Arrow Flight connections. Before Doris version 2.1.7, Arrow Flight connections are disconnected after a default timeout of 3 days. It only forces the number of connections to be less than `qe_max_connection/2`. If the number of connections exceeds the limit, they will be eliminated according to lru. `qe_max_connection` is the total number of connections for all fe users, which is 1024 by default. For details, see the introduction of the conf `arrow_flight_token_cache_size`. Fixed in [Fix exceed user property max connection cause Reach limit of connections #39127](https://github.com/apache/doris/pull/39127). For details, please see: [Questions](<https://ask.selectdb.com/questions/D18b1/2-1-4-ban-ben-python-shi-yong-arrow-flight-sql-lian-jie-bu-hui-duan-kai-lian-jie-> shu-zhan-man-da-dao-100/E1ic1?commentId=10070000000005324)
